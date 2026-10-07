@@ -23,6 +23,12 @@ VS Code의 Live Server 대신 `npm run dev`로 실행하세요. React·TypeScrip
 
 클라우드 작업 환경에서는 `/workspace/new-Test/moa`에서 실행하고, npm 기본 캐시 경로에 쓸 수 없다면 `npm ci --cache /tmp/moa-npm-cache`를 사용합니다.
 
+## GitHub Pages 접속
+
+저장소의 `.github/workflows/deploy-pages.yml`이 `main` 변경 시 이 폴더에서 의존성 설치·빌드를 실행하고 `dist`를 GitHub Pages에 배포합니다. 최초 Pages 활성화 방법은 [저장소 안내](../README.md#웹사이트로-접속)를 참고하세요.
+
+배포가 완료되면 **https://udtdragon.github.io/new-Test/** 로 접속합니다. Vite의 상대 경로 설정으로 저장소 하위 주소에서도 글꼴과 이미지가 로드됩니다.
+
 ## 포함된 기능
 
 - PC·태블릿·모바일 반응형 카드 목록과 목록 보기
