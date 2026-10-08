@@ -443,10 +443,10 @@ export default function App() {
             좋은 발견을,
             <br className="mobile-break" /> <span>다시 꺼내는 곳.</span>
           </h1>
-          <p>
+          {/* <p>
             스쳐 지나가기 아쉬운 정보, 모아두세요.
             <br className="mobile-break" /> 필요할 때 바로 찾을 수 있도록.
-          </p>
+          </p> */}
           <div className="search-box">
             <Search size={22} strokeWidth={1.8} />
             <input
@@ -473,9 +473,9 @@ export default function App() {
               </kbd>
             )}
           </div>
-          <div className="search-hint">
+          {/* <div className="search-hint">
             제목, 메모, 태그로 기억 속 정보를 찾아보세요.
-          </div>
+          </div> */}
           <div className="hero-decoration decoration-left" aria-hidden="true">
             <BookmarkIcon size={27} strokeWidth={1.3} />
           </div>
@@ -492,9 +492,9 @@ export default function App() {
               </h2>
               <span className="total-count">{items.length}</span>
             </div>
-            <span className="library-description">
+            {/* <span className="library-description">
               오늘의 발견이 내일의 힌트가 되도록
-            </span>
+            </span> */}
           </div>
           <div className="library-toolbar">
             <div className="category-filters" aria-label="분류 필터">
