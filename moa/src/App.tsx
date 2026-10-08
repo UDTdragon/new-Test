@@ -469,7 +469,7 @@ export default function App() {
               </button>
             ) : (
               <kbd>
-                <span>⌘</span> K
+                <span>⌕</span>
               </kbd>
             )}
           </div>
