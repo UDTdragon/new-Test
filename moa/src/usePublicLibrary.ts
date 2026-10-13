@@ -9,6 +9,7 @@ export function usePublicLibrary() {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const base = useRef<Library | null>(null);
   const current = useRef(library);
   const locked = useRef(true);
@@ -34,7 +35,12 @@ export function usePublicLibrary() {
         locked.current = false;
         setReady(true);
         setStatus('로그인 없이 함께 사용하는 공용 보관함');
-      } catch (error) { if (active) setStatus(error instanceof Error ? error.message : '불러오지 못했습니다. 새로고침해주세요.'); }
+      } catch (error) {
+        if (active) {
+          setLoadFailed(true);
+          setStatus(error instanceof Error ? error.message : '불러오지 못했습니다. 새로고침해주세요.');
+        }
+      }
     }
     void load();
     return () => { active = false; };
@@ -71,8 +77,13 @@ export function usePublicLibrary() {
     const a = document.createElement('a'); a.href = url; a.download = 'moa-library-backup.json'; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  return { library, setLibrary, status, canEdit: ready && !busy && !failed, failed, busy,
-    localFailed: local.failed, hasLocal: hasLocal && !local.failed,
+  const imported = ready && hasLocal && !local.failed
+    ? importBrowserLibrary(library, local.library) : null;
+  const needsImport = Boolean(imported && (
+    imported.categories.length > library.categories.length || imported.items.length > library.items.length
+  ));
+  return { library, setLibrary, status, loadFailed, canEdit: ready && !busy && !failed, failed, busy,
+    localFailed: hasLocal && local.failed, hasLocal: needsImport,
     importLocal: () => setLibrary(importBrowserLibrary(current.current, local.library)),
     retry: () => void persist(current.current), downloadDraft, hasDraft: Boolean(draft) };
 }

@@ -50,3 +50,12 @@ test('legacy browser data is read without altering original storage', () => {
   assert.equal(readLibrary().failed, true);
   assert.equal(values.get(STORAGE_KEY), '{broken');
 });
+test('already imported cards are recognized after JSONB reorders object keys', () => {
+  const local = library();
+  const remote = library();
+  remote.items[0] = Object.fromEntries(Object.entries(remote.items[0]).reverse());
+  remote.items[0].id = 'imported';
+  const merged = importBrowserLibrary(remote, local);
+  assert.equal(merged.items.length, remote.items.length);
+  assert.equal(merged.categories.length, remote.categories.length);
+});

@@ -285,7 +285,7 @@ function BookmarkForm({
 }
 
 export default function App() {
-  const { library, setLibrary, status, canEdit, failed, busy, localFailed, hasLocal, importLocal, retry, downloadDraft, hasDraft } = usePublicLibrary();
+  const { library, setLibrary, status, loadFailed, canEdit, failed, busy, localFailed, hasLocal, importLocal, retry, downloadDraft, hasDraft } = usePublicLibrary();
   const { items, categories } = library;
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const getCategory = (id: string) => categoryById.get(id) ?? categories[0];
@@ -553,13 +553,15 @@ export default function App() {
               </div>
             </div>
           </div>
+          {(loadFailed || failed || localFailed || hasLocal) && (
           <div className="storage-warning" role="status">
             {status}
             {localFailed && <p>기존 브라우저 정보를 읽지 못했습니다. 원본은 변경하지 않았습니다.</p>}
             {hasLocal && <button disabled={!canEdit} onClick={importLocal}>기존 브라우저 정보 가져오기</button>}
             {failed && <button disabled={busy} onClick={retry}>저장 재시도</button>}
-            {hasDraft && <button onClick={downloadDraft}>보관된 임시본 내려받기</button>}
+            {failed && hasDraft && <button onClick={downloadDraft}>보관된 임시본 내려받기</button>}
           </div>
+          )}
           <div className="results-meta" aria-live="polite">
             <span>
               {query ? (

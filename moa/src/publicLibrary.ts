@@ -46,7 +46,11 @@ export function importBrowserLibrary(remote: Library, local: Library): Library {
   const items = [...remote.items];
   for (const item of local.items) {
     const candidate = { ...item, categoryId: mapping.get(item.categoryId)! };
-    const content = ({ id: _id, ...rest }: typeof candidate) => JSON.stringify(rest);
+    const content = (card: typeof candidate) => JSON.stringify({
+      title: card.title, note: card.note, tags: card.tags, categoryId: card.categoryId,
+      favorite: card.favorite, createdAt: card.createdAt,
+      links: card.links.map(link => ({ id: link.id, label: link.label, url: link.url })),
+    });
     if (!items.some(existing => content(existing) === content(candidate)))
       items.push({ ...candidate, id: crypto.randomUUID() });
   }
