@@ -237,7 +237,7 @@ function isLinks(value: unknown): value is BookmarkLink[] {
   );
 }
 
-function isLibrary(value: unknown): value is Library {
+export function isLibrary(value: unknown): value is Library {
   if (!value || typeof value !== "object") return false;
   const library = value as Library;
   if (

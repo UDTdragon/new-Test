@@ -52,4 +52,8 @@ GitHub Pages를 한 번 활성화하면 아래 주소로 PC·모바일에서 접
 
 이후 `main`에 수정 사항을 올리면 자동으로 빌드하고 배포합니다. 저장소가 비공개라면 계정의 GitHub Pages 지원 여부를 먼저 확인하세요. 무료 개인 계정에서는 공개 저장소에 사용할 수 있습니다.
 
-배포되는 것은 화면과 샘플 자료입니다. 개인적으로 저장한 메모와 링크는 브라우저에 남아 있으며 GitHub에 업로드되지 않습니다. VS Code에서 사용한 개발 서버와 웹사이트는 주소가 달라 보관함이 각각 저장됩니다.
+카테고리와 카드는 로그인 없이 Supabase의 `moa_public_test_library` 테이블에서 `id = 'shared'` 행의 `data`에 저장합니다. 모든 방문자가 같은 보관함을 읽고 수정합니다.
+
+저장소 **Settings → Secrets and variables → Actions → Variables**에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`를 설정하세요. 빌드 단계에 두 변수를 연결했으며, 누락되면 배포를 중단합니다. 브라우저에 공개되는 publishable 키만 사용합니다.
+
+기존 브라우저 데이터는 자동으로 덮어쓰거나 삭제하지 않습니다. 기존에 사용한 주소와 브라우저에서 **기존 브라우저 정보 가져오기**를 누르면 공용 보관함에 합칩니다. 개발 서버와 GitHub Pages는 주소가 달라 각각 가져와야 합니다.

@@ -30,17 +30,16 @@ import {
 import {
   hostname,
   isWebUrl,
-  readLibrary,
-  STORAGE_KEY,
   type Bookmark,
   type BookmarkLink,
   type Category,
-  type Library,
 } from "./data";
 
 import Dialog from "./components/Dialog";
 import CategoryCover, { categoryIcons } from "./components/CategoryCover";
 import CategoryManager from "./components/CategoryManager";
+
+import { usePublicLibrary } from "./usePublicLibrary";
 
 type Editor = { kind: "new" } | { kind: "edit"; item: Bookmark };
 
@@ -286,8 +285,7 @@ function BookmarkForm({
 }
 
 export default function App() {
-  const [loaded] = useState(readLibrary);
-  const [library, setLibrary] = useState<Library>(loaded.library);
+  const { library, setLibrary, status, canEdit, failed, busy, localFailed, hasLocal, importLocal, retry, downloadDraft, hasDraft } = usePublicLibrary();
   const { items, categories } = library;
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const getCategory = (id: string) => categoryById.get(id) ?? categories[0];
@@ -300,7 +298,6 @@ export default function App() {
     }));
   }
   const [managingCategories, setManagingCategories] = useState(false);
-  const [storageIssue, setStorageIssue] = useState(loaded.failed);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [tab, setTab] = useState<"all" | "favorites">("all");
@@ -310,15 +307,6 @@ export default function App() {
   const [selected, setSelected] = useState<string | null>(null);
   const [toast, setToast] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (loaded.failed) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
-      setStorageIssue(false);
-    } catch {
-      setStorageIssue(true);
-    }
-  }, [library, loaded.failed]);
   useEffect(() => {
     if (!toast) return;
     const timeout = window.setTimeout(() => setToast(""), 3200);
@@ -375,7 +363,7 @@ export default function App() {
     );
     setToast(
       editor?.kind === "edit"
-        ? "변경 내용을 저장했어요."
+        ? "변경 내용을 반영했어요. 공용 저장 상태를 확인해주세요."
         : "새로운 발견을 보관함에 담았어요.",
     );
     if (editor?.kind === "new") {
@@ -413,7 +401,7 @@ export default function App() {
               className={tab === "all" ? "active" : ""}
               onClick={() => setTab("all")}
             >
-              <BookmarkIcon size={16} />내 보관함
+              <BookmarkIcon size={16} />공용 보관함
             </button>
             <button
               className={tab === "favorites" ? "active" : ""}
@@ -425,6 +413,7 @@ export default function App() {
           </nav>
           <button
             className="primary-button add-button"
+            disabled={!canEdit}
             onClick={() => setEditor({ kind: "new" })}
           >
             <Plus size={18} />
@@ -488,7 +477,7 @@ export default function App() {
           <div className="library-heading">
             <div className="library-title">
               <h2 id="library-title">
-                {tab === "favorites" ? "즐겨찾는 발견" : "나의 보관함"}
+                {tab === "favorites" ? "즐겨찾는 발견" : "공용 보관함"}
               </h2>
               <span className="total-count">{items.length}</span>
             </div>
@@ -524,6 +513,7 @@ export default function App() {
             <div className="view-controls">
               <button
                 className="category-manage-button"
+                disabled={!canEdit}
                 onClick={() => setManagingCategories(true)}
               >
                 <Settings2 size={15} />
@@ -563,12 +553,13 @@ export default function App() {
               </div>
             </div>
           </div>
-          {storageIssue && (
-            <p className="storage-warning" role="status">
-              브라우저 저장소를 사용할 수 없어 변경 내용은 새로고침 후 유지되지
-              않을 수 있어요. 기존 저장 데이터는 덮어쓰지 않았습니다.
-            </p>
-          )}
+          <div className="storage-warning" role="status">
+            {status}
+            {localFailed && <p>기존 브라우저 정보를 읽지 못했습니다. 원본은 변경하지 않았습니다.</p>}
+            {hasLocal && <button disabled={!canEdit} onClick={importLocal}>기존 브라우저 정보 가져오기</button>}
+            {failed && <button disabled={busy} onClick={retry}>저장 재시도</button>}
+            {hasDraft && <button onClick={downloadDraft}>보관된 임시본 내려받기</button>}
+          </div>
           <div className="results-meta" aria-live="polite">
             <span>
               {query ? (
@@ -585,7 +576,7 @@ export default function App() {
               <b>{filtered.length}개</b>
             </span>
             <span>
-              <span className="status-dot" />이 브라우저에 저장됩니다
+              <span className="status-dot" />모두가 함께 보는 공용 보관함
             </span>
           </div>
 
@@ -604,6 +595,7 @@ export default function App() {
                     className={`favorite-button ${item.favorite ? "is-favorite" : ""}`}
                     aria-pressed={item.favorite}
                     aria-label={`${item.title} 즐겨찾기 ${item.favorite ? "해제" : "추가"}`}
+                    disabled={!canEdit}
                     onClick={() => toggleFavorite(item.id)}
                   >
                     <Star
@@ -697,7 +689,7 @@ export default function App() {
               <button
                 className="secondary-button"
                 onClick={() => {
-                  if (!items.length) setEditor({ kind: "new" });
+                  if (!items.length && canEdit) setEditor({ kind: "new" });
                   else {
                     setQuery("");
                     setCategory("all");
@@ -735,7 +727,7 @@ export default function App() {
             if (!next.categories.some((c) => c.id === category))
               setCategory("all");
             setManagingCategories(false);
-            setToast("카테고리 변경사항을 저장했어요.");
+            setToast("카테고리 변경사항을 반영했어요. 공용 저장 상태를 확인해주세요.");
           }}
         />
       )}
@@ -795,6 +787,7 @@ export default function App() {
             )}
             <div className="dialog-actions detail-actions">
               <button
+                disabled={!canEdit}
                 className="danger-button"
                 onClick={() => {
                   setItems((current) =>
@@ -810,6 +803,7 @@ export default function App() {
               <button
                 className="secondary-button"
                 onClick={() => {
+                  if (!canEdit) return;
                   setEditor({ kind: "edit", item: detail });
                   setSelected(null);
                 }}
